@@ -1,25 +1,27 @@
-#include "BSON/Details/utils.h"
+#include "Bson/Details/utils.h"
 
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <map>
 
-#include <boost\bimap\bimap.hpp>
+#include <boost/hana/fold_left.hpp>
+#include <boost/hana/at_key.hpp>
 
 namespace Bson
 {
 
 const size_t MaxCStringBuff = 16384;
 
-//enum class ElementType {
-//    Double = 0x01,
-//    String = 0x02,
-//    Int32 = 0x10,
-//    Uint32 = 0x10,
-//    Int64 = 0x12,    
-//    Decimal = 0x13
-//};
-//const boost::bimaps::bimap<int, ElementType> ElementTypes = {};
+const auto IdxToTypeMap = boost::hana::fold_left(Element::TypeInfoMap, std::map<int, int>{}, [](auto map, auto pair) {
+
+    using Reader = Element::Value(*)(Istream&);
+    Reader r = &read<Double>;
+
+    return map;
+});
+
+
 
 // TODO: handle endianness
 
@@ -83,12 +85,18 @@ void writeString(const std::string& string, Ostream& stream)
 
 Element readElement(Istream& stream)
 {
-    const auto elementType = read<Byte>(stream);
+    //const auto elementTypeIdx = read<Byte>(stream);
+    auto name = readCString(stream);
 
-    return {};
+
+
+    Element elem;
+    elem.name = std::move(name);
+
+    return elem;
 }
 
-void writeElement(const Element& element, Ostream& stream)
+void writeElement(const Element& /*element*/, Ostream& /*stream*/)
 {
 
 }

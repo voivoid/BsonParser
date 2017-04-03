@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include <boost\iostreams\device\array.hpp>
-#include <boost\iostreams\stream.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
 
 template <typename T, typename WriteFunc, typename ReadFunc>
 bool testMemory(const T& value, size_t buffSize, WriteFunc write, ReadFunc read)

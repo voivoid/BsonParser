@@ -11,8 +11,6 @@ namespace Bson
 class Document
 {
 public:
-
-private:
     List _list;
 };
 
