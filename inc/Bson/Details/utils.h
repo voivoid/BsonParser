@@ -28,8 +28,8 @@ struct False {};
 
 struct Element
 {
-    static constexpr auto TypeInfoMap = boost::hana::make_map(boost::hana::make_pair(boost::hana::type_c<Double>, boost::hana::make_pair(0x01, &read<Double>)),
-                                                              boost::hana::make_pair(boost::hana::type_c<Int32>, boost::hana::make_pair(0x10, &read<Int32>)));
+    static constexpr auto TypeInfoMap = boost::hana::make_map(boost::hana::make_pair(boost::hana::type_c<Double>, 0x01),
+                                                              boost::hana::make_pair(boost::hana::type_c<Int32>, 0x10));
     using Value = decltype(boost::hana::unpack(boost::hana::keys(TypeInfoMap), boost::hana::template_<boost::variant>))::type;
 
     std::string name;

@@ -11,12 +11,50 @@
 namespace Bson
 {
 
+namespace
+{
+
 const size_t MaxCStringBuff = 16384;
 
-const auto IdxToTypeMap = boost::hana::fold_left(Element::TypeInfoMap, std::map<int, int>{}, [](auto map, auto pair) {
+template <typename T, T(*f)(Istream&)>
+Element::Value adapt(Istream& stream)
+{
+    return {f(stream)};
+}
 
-    using Reader = Element::Value(*)(Istream&);
-    Reader r = &read<Double>;
+using Reader = Element::Value(*)(Istream&);
+
+struct GetElementIndexVisitor : boost::static_visitor<size_t> {
+    template <typename T>
+    size_t operator()(const T&) const
+    {
+        return 0;
+    }
+};
+
+struct WriteElementVisitor : boost::static_visitor<void> {
+
+    WriteElementVisitor(Ostream& stream) : stream(stream) {}
+
+    template <typename T>
+    void operator()(const T& value) const
+    {
+        write<T>(value, stream);
+    }
+
+private:
+    Ostream& stream;
+};
+
+}
+
+const auto IndexToReaderMap = boost::hana::fold_left(Element::TypeInfoMap, std::map<int, Reader>{}, [](auto map, const auto pair) {
+    const auto type = boost::hana::first(pair);
+    const auto index = boost::hana::second(pair);
+
+    using Type = typename decltype(type)::type;
+
+    map[index] = &adapt<Type, &read<Type>>;
 
     return map;
 });
@@ -85,20 +123,27 @@ void writeString(const std::string& string, Ostream& stream)
 
 Element readElement(Istream& stream)
 {
-    //const auto elementTypeIdx = read<Byte>(stream);
+    const auto elementTypeIdx = read<Byte>(stream);
+    const auto reader = IndexToReaderMap.at(elementTypeIdx);
+
     auto name = readCString(stream);
-
-
 
     Element elem;
     elem.name = std::move(name);
+    elem.value = reader(stream);
 
     return elem;
 }
 
-void writeElement(const Element& /*element*/, Ostream& /*stream*/)
+void writeElement(const Element& element, Ostream& stream)
 {
+    const size_t index = boost::apply_visitor(GetElementIndexVisitor{}, element.value);
+    assert(index <= 255);
+    write<Byte>(index, stream);
 
+    writeCString(element.name, stream);
+
+    boost::apply_visitor(WriteElementVisitor{stream}, element.value);
 }
 
 } // namespace Bson

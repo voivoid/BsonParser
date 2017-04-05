@@ -15,7 +15,7 @@ target_link_libraries(BsonParser Boost::boost)
 target_include_directories(BsonParser PUBLIC inc)
 
 if(NOT MSVC)
-    target_compile_options(BsonParser PUBLIC -Wall -Wextra -Werror -std=c++1z)
+    target_compile_options(BsonParser PUBLIC -Wall -Wextra -Werror -pedantic -std=c++1z)
 endif()
 
 enable_testing()
