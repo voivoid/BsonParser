@@ -1,10 +1,10 @@
 #include "Bson/Details/utils.h"
 
 #include <cassert>
-#include <sstream>
+#include <iostream>
 #include <iterator>
 #include <limits>
-#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -14,7 +14,7 @@
 template <typename T>
 size_t getValueSize(const T&)
 {
-    //TODO : calc size
+    // TODO : calc size
     return 1024;
 }
 
@@ -50,7 +50,8 @@ void test(const T& value)
     assert(testStream(value));
 }
 
-int main() {
+int main()
+{
 
     test<Bson::Byte>(0);
     test<Bson::Byte>(1);
@@ -85,7 +86,7 @@ int main() {
 
     test<Bson::Double>(0.0);
     test<Bson::Double>(0.1);
-    test<Bson::Double>(0.-1);
+    test<Bson::Double>(-0.1);
     test<Bson::Double>(1.0);
     test<Bson::Double>(-1.0);
     test<Bson::Double>(std::numeric_limits<Bson::Double>::min());
@@ -93,7 +94,7 @@ int main() {
 
     test<Bson::Decimal>(0.0);
     test<Bson::Decimal>(0.1);
-    test<Bson::Decimal>(0.-1);
+    test<Bson::Decimal>(-0.1);
     test<Bson::Decimal>(1.0);
     test<Bson::Decimal>(-1.0);
     test<Bson::Decimal>(std::numeric_limits<Bson::Decimal>::min());

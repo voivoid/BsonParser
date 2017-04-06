@@ -13,5 +13,4 @@ Document decode(const std::vector<Byte>&)
     return {};
 }
 
-
 } // namespace Bson

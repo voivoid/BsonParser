@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <iterator>
 #include <string>
+#include <vector>
 
 namespace Bson
 {
@@ -28,11 +28,26 @@ using String = std::string;
 
 struct CString
 {
-    bool operator==(const CString& rhs) const { return s == rhs.s; }
+    bool operator==(const CString& rhs) const
+    {
+        return s == rhs.s;
+    }
     std::string s;
 };
 
-struct True{ bool operator==(const True&) const { return true; }};
-struct False{ bool operator==(const False&) const { return true; }};
+struct True
+{
+    bool operator==(const True&) const
+    {
+        return true;
+    }
+};
+struct False
+{
+    bool operator==(const False&) const
+    {
+        return true;
+    }
+};
 
 } // namespace Bson

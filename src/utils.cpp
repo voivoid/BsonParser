@@ -5,8 +5,8 @@
 #include <limits>
 #include <map>
 
-#include <boost/hana/fold_left.hpp>
 #include <boost/hana/at_key.hpp>
+#include <boost/hana/fold_left.hpp>
 
 namespace Bson
 {
@@ -16,7 +16,8 @@ namespace
 
 const size_t MaxCStringBuff = 16384;
 
-struct GetElementIndexVisitor : boost::static_visitor<Byte> {
+struct GetElementIndexVisitor : boost::static_visitor<Byte>
+{
     template <typename T>
     Byte operator()(const T&) const
     {
@@ -24,8 +25,12 @@ struct GetElementIndexVisitor : boost::static_visitor<Byte> {
     }
 };
 
-struct WriteElementVisitor : boost::static_visitor<void> {
-    WriteElementVisitor(Ostream& stream) : stream(stream) {}
+struct WriteElementVisitor : boost::static_visitor<void>
+{
+    WriteElementVisitor(Ostream& stream)
+        : stream(stream)
+    {
+    }
 
     template <typename T>
     void operator()(const T& value) const
@@ -37,14 +42,13 @@ private:
     Ostream& stream;
 };
 
-template <typename T, T(*reader)(Istream&)>
+template <typename T, T (*reader)(Istream&)>
 Element::Value adaptReader(Istream& stream)
 {
     return {reader(stream)};
 }
 
-using Reader = Element::Value(*)(Istream&);
-
+using Reader = Element::Value (*)(Istream&);
 }
 
 const auto IndexToReaderMap = boost::hana::fold_left(Element::TypeInfoMap, std::map<int, Reader>{}, [](auto map, const auto pair) {
@@ -77,9 +81,9 @@ typename std::enable_if_t<std::is_pod<T>::value> write(const T value, Ostream& s
     stream.write(reinterpret_cast<const Byte*>(&value), sizeof(value));
 }
 
-#define BSON_INSTANTIATE_FUNCS(type)                      \
-    template type read(Istream& iter);                    \
-    template void write(const type value, Ostream& iter); \
+#define BSON_INSTANTIATE_FUNCS(type)   \
+    template type read(Istream& iter); \
+    template void write(const type value, Ostream& iter);
 
 BSON_INSTANTIATE_FUNCS(Byte);
 BSON_INSTANTIATE_FUNCS(Int32);

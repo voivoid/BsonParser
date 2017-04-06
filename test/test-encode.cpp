@@ -1,9 +1,10 @@
 #include "Bson/parser.h"
 
-#include <string>
 #include <cassert>
+#include <string>
 
-int main() {
+int main()
+{
 
     Bson::Document doc;
     Bson::encode(doc);

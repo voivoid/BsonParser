@@ -3,11 +3,11 @@
 #include "Bson/Details/common.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
-#include <boost/variant.hpp>
 #include <boost/hana/map.hpp>
+#include <boost/variant.hpp>
 
 namespace Bson
 {
@@ -24,7 +24,10 @@ struct Element
                                                               boost::hana::make_pair(boost::hana::type_c<Decimal>, 0x13));
     using Value = decltype(boost::hana::unpack(boost::hana::keys(TypeInfoMap), boost::hana::template_<boost::variant>))::type;
 
-    bool operator==(const Element& rhs) const { return name == rhs.name && value == rhs.value; }
+    bool operator==(const Element& rhs) const
+    {
+        return name == rhs.name && value == rhs.value;
+    }
 
     CString name;
     Value value;
@@ -43,6 +46,5 @@ void write(False, Ostream& stream);
 void write(const CString& string, Ostream& stream);
 void write(const Element& element, Ostream& stream);
 void write(const List& list, Ostream& stream);
-
 
 } // namespace Bson
