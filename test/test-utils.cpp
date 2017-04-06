@@ -11,49 +11,43 @@
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 
-template <typename T, typename WriteFunc, typename ReadFunc>
-bool testMemory(const T& value, size_t buffSize, WriteFunc write, ReadFunc read)
+template <typename T>
+size_t getValueSize(const T&)
 {
-    std::vector<Bson::Byte> data(buffSize, 0);
+    //TODO : calc size
+    return 1024;
+}
+
+template <typename T>
+bool testMemory(const T& value)
+{
+    std::vector<Bson::Byte> data(getValueSize(value), 0);
 
     boost::iostreams::basic_array<Bson::Byte> arr(data.data(), data.size());
     boost::iostreams::stream<boost::iostreams::basic_array<Bson::Byte>> istream(arr);
     boost::iostreams::stream<boost::iostreams::basic_array<Bson::Byte>> ostream(arr);
 
-    write(value, ostream);
-    const auto result = read(istream);
+    Bson::write(value, ostream);
+    const auto result = Bson::read<T>(istream);
 
     return result == value;
 }
 
-template <typename T, typename WriteFunc, typename ReadFunc>
-bool testStream(T val, WriteFunc write, ReadFunc read)
+template <typename T>
+bool testStream(const T& val)
 {
     std::basic_stringstream<Bson::Byte> ss(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
-    write(val, ss);
-    const auto result = read(ss);
+    Bson::write(val, ss);
+    const auto result = Bson::read<T>(ss);
 
     return val == result;
 }
 
 template <typename T>
-void test(T value)
+void test(const T& value)
 {
-    assert(testMemory(value, sizeof(value), Bson::write<T>, Bson::read<T>));
-    assert(testStream(value, Bson::write<T>, Bson::read<T>));
-}
-
-void testString(const std::string& value)
-{
-    assert(testMemory(value, value.length() + sizeof(Bson::Int32) + 1, Bson::writeString, Bson::readString));
-    assert(testStream(value, Bson::writeString, Bson::readString));
-}
-
-void test(const std::string& value)
-{
-    assert(testMemory(value, value.length() + 1, Bson::writeCString, Bson::readCString));
-    assert(testStream(value, Bson::writeCString, Bson::readCString));
-    testString(value);
+    assert(testMemory(value));
+    assert(testStream(value));
 }
 
 int main() {
@@ -69,7 +63,7 @@ int main() {
     test<Bson::Int32>(42);
     test<Bson::Int32>(-42);
     test<Bson::Int32>(0x01020304);
-    test<Bson::Int32>(0xff0000ff);
+    test<Bson::Int32>(0x00ff00ff);
     test<Bson::Int32>(std::numeric_limits<Bson::Int32>::min());
     test<Bson::Int32>(std::numeric_limits<Bson::Int32>::max());
 
@@ -105,10 +99,22 @@ int main() {
     test<Bson::Decimal>(std::numeric_limits<Bson::Decimal>::min());
     test<Bson::Decimal>(std::numeric_limits<Bson::Decimal>::max());
 
-    test(std::string(""));
-    test(std::string("hello"));
-    test(std::string("hello world"));
-    testString(std::string("hello\0world", 11));
+    test(Bson::CString{{""}});
+    test(Bson::CString{{"hello"}});
+    test(Bson::CString{{"hello world"}});
+    test(Bson::String(""));
+    test(Bson::String("hello"));
+    test(Bson::String("hello world"));
+    test(Bson::String("hello\0world", 11));
+
+    test(Bson::Element{{"test double"}, Bson::Double{42.0}});
+    test(Bson::Element{{"test string"}, Bson::String{"Hello world"}});
+    test(Bson::Element{{"test true"}, Bson::True{}});
+    test(Bson::Element{{"test false"}, Bson::False{}});
+    test(Bson::Element{{"test int32"}, Bson::Int32{42}});
+    test(Bson::Element{{"test uint64"}, Bson::Uint64{42}});
+    test(Bson::Element{{"test int64"}, Bson::Int64{42}});
+    test(Bson::Element{{"test Decimal"}, Bson::Decimal{42.0}});
 
     return 0;
 }

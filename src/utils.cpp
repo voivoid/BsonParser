@@ -16,35 +16,34 @@ namespace
 
 const size_t MaxCStringBuff = 16384;
 
-template <typename T, T(*f)(Istream&)>
-Element::Value adapt(Istream& stream)
-{
-    return {f(stream)};
-}
-
-using Reader = Element::Value(*)(Istream&);
-
-struct GetElementIndexVisitor : boost::static_visitor<size_t> {
+struct GetElementIndexVisitor : boost::static_visitor<Byte> {
     template <typename T>
-    size_t operator()(const T&) const
+    Byte operator()(const T&) const
     {
-        return 0;
+        return Element::TypeInfoMap[boost::hana::type_c<T>];
     }
 };
 
 struct WriteElementVisitor : boost::static_visitor<void> {
-
     WriteElementVisitor(Ostream& stream) : stream(stream) {}
 
     template <typename T>
     void operator()(const T& value) const
     {
-        write<T>(value, stream);
+        write(value, stream);
     }
 
 private:
     Ostream& stream;
 };
+
+template <typename T, T(*reader)(Istream&)>
+Element::Value adaptReader(Istream& stream)
+{
+    return {reader(stream)};
+}
+
+using Reader = Element::Value(*)(Istream&);
 
 }
 
@@ -54,26 +53,27 @@ const auto IndexToReaderMap = boost::hana::fold_left(Element::TypeInfoMap, std::
 
     using Type = typename decltype(type)::type;
 
-    map[index] = &adapt<Type, &read<Type>>;
+    map[index] = &adaptReader<Type, &read<Type>>;
 
     return map;
 });
-
-
 
 // TODO: handle endianness
 
 template <typename T>
 T read(Istream& stream)
 {
+    static_assert(std::is_pod<T>::value);
+
     T value;
     stream.read(reinterpret_cast<Byte*>(&value), sizeof(value));
     return value;
 }
 
 template <typename T>
-void write(const T value, Ostream& stream)
+typename std::enable_if_t<std::is_pod<T>::value> write(const T value, Ostream& stream)
 {
+    static_assert(std::is_pod<T>::value);
     stream.write(reinterpret_cast<const Byte*>(&value), sizeof(value));
 }
 
@@ -88,45 +88,55 @@ BSON_INSTANTIATE_FUNCS(Uint64);
 BSON_INSTANTIATE_FUNCS(Double);
 BSON_INSTANTIATE_FUNCS(Decimal);
 
-std::string readCString(Istream& stream)
-{
-    Byte buff[MaxCStringBuff];
-    stream.getline(buff, MaxCStringBuff, 0);
-
-    return std::string(reinterpret_cast<char*>(buff));
-}
-
-std::string readString(Istream& stream)
+template <>
+String read(Istream& stream)
 {
     Int32 strLen = read<Int32>(stream);
 
     assert(strLen > 0);
 
-    std::string s;
-    s.resize(strLen - 1);
+    String s;
+    s.resize(static_cast<size_t>(strLen) - 1);
     stream.read(reinterpret_cast<Byte*>(&s[0]), strLen - 1);
     stream.ignore(1);
 
     return s;
 }
 
-void writeCString(const std::string& string, Ostream& stream)
+template <>
+CString read(Istream& stream)
 {
-    stream.write(reinterpret_cast<const Byte*>(string.c_str()), string.length() + 1);
+    Byte buff[MaxCStringBuff];
+    stream.getline(buff, MaxCStringBuff, 0);
+
+    return {String(reinterpret_cast<char*>(buff))};
 }
 
-void writeString(const std::string& string, Ostream& stream)
+template <>
+False read(Istream& stream)
 {
-    write(static_cast<Int32>(string.length() + 1), stream);
-    writeCString(string, stream);
+    const auto byte = read<Byte>(stream);
+    assert(byte == 0x00);
+
+    return {};
 }
 
-Element readElement(Istream& stream)
+template <>
+True read(Istream& stream)
+{
+    const auto byte = read<Byte>(stream);
+    assert(byte == 0x01);
+
+    return {};
+}
+
+template <>
+Element read(Istream& stream)
 {
     const auto elementTypeIdx = read<Byte>(stream);
     const auto reader = IndexToReaderMap.at(elementTypeIdx);
 
-    auto name = readCString(stream);
+    auto name = read<CString>(stream);
 
     Element elem;
     elem.name = std::move(name);
@@ -135,13 +145,32 @@ Element readElement(Istream& stream)
     return elem;
 }
 
-void writeElement(const Element& element, Ostream& stream)
+void write(const String& string, Ostream& stream)
 {
-    const size_t index = boost::apply_visitor(GetElementIndexVisitor{}, element.value);
-    assert(index <= 255);
-    write<Byte>(index, stream);
+    write(static_cast<Int32>(string.length() + 1), stream);
+    stream.write(reinterpret_cast<const Byte*>(string.c_str()), string.length() + 1);
+}
 
-    writeCString(element.name, stream);
+void write(const CString& string, Ostream& stream)
+{
+    stream.write(reinterpret_cast<const Byte*>(string.s.c_str()), string.s.length() + 1);
+}
+
+void write(True, Ostream& stream)
+{
+    write<Byte>(0x01, stream);
+}
+
+void write(False, Ostream& stream)
+{
+    write<Byte>(0x00, stream);
+}
+
+void write(const Element& element, Ostream& stream)
+{
+    const Byte index = boost::apply_visitor(GetElementIndexVisitor{}, element.value);
+    write<Byte>(index, stream);
+    write(element.name, stream);
 
     boost::apply_visitor(WriteElementVisitor{stream}, element.value);
 }
