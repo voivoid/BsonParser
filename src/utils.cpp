@@ -42,6 +42,12 @@ private:
     Ostream& stream;
 };
 
+bool hasElement(Istream& stream)
+{
+    const auto peek = stream.peek();
+    return peek != std::char_traits<Byte>::eof() && peek != 0;
+}
+
 template <typename T, T (*reader)(Istream&)>
 Element::Value adaptReader(Istream& stream)
 {
@@ -149,6 +155,20 @@ Element read(Istream& stream)
     return elem;
 }
 
+template <>
+List read(Istream& stream)
+{
+    List elements;
+
+    while (hasElement(stream))
+    {
+        elements.push_back(read<Element>(stream));
+    }
+
+    return elements;
+    ;
+}
+
 void write(const String& string, Ostream& stream)
 {
     write(static_cast<Int32>(string.length() + 1), stream);
@@ -177,6 +197,14 @@ void write(const Element& element, Ostream& stream)
     write(element.name, stream);
 
     boost::apply_visitor(WriteElementVisitor{stream}, element.value);
+}
+
+void write(const List& list, Ostream& stream)
+{
+    for (const auto& elem : list)
+    {
+        write(elem, stream);
+    }
 }
 
 } // namespace Bson

@@ -24,8 +24,8 @@ bool testMemory(const T& value)
     std::vector<Bson::Byte> data(getValueSize(value), 0);
 
     boost::iostreams::basic_array<Bson::Byte> arr(data.data(), data.size());
-    boost::iostreams::stream<boost::iostreams::basic_array<Bson::Byte>> istream(arr);
-    boost::iostreams::stream<boost::iostreams::basic_array<Bson::Byte>> ostream(arr);
+    boost::iostreams::stream<decltype(arr)> istream(arr);
+    boost::iostreams::stream<decltype(arr)> ostream(arr);
 
     Bson::write(value, ostream);
     const auto result = Bson::read<T>(istream);
@@ -116,6 +116,12 @@ int main()
     test(Bson::Element{{"test uint64"}, Bson::Uint64{42}});
     test(Bson::Element{{"test int64"}, Bson::Int64{42}});
     test(Bson::Element{{"test Decimal"}, Bson::Decimal{42.0}});
+
+    test(Bson::List{});
+    test(Bson::List{Bson::Element{{"element 1"}, Bson::Double{42.0}}});
+    test(Bson::List{Bson::Element{{"element 1"}, Bson::String{"Hello world"}},
+                    Bson::Element{{"element 2"}, Bson::Int32{42}},
+                    Bson::Element{{"element 3"}, Bson::Int64{42}}});
 
     return 0;
 }
