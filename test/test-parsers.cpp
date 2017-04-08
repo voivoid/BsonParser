@@ -8,8 +8,8 @@
 #include <limits>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -118,7 +118,6 @@ int main()
     test(Bson::Element{{"test uint64"}, Bson::Uint64{42}});
     test(Bson::Element{{"test int64"}, Bson::Int64{42}});
     test(Bson::Element{{"test Decimal"}, Bson::Decimal{42.0}});
-
 
     test(Bson::List{});
 

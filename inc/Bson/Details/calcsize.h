@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Bson/Details/types.h"
 #include "Bson/Details/parsers.h"
+#include "Bson/Details/types.h"
 
-#include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/concepts.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace Bson
 {
@@ -19,7 +19,8 @@ public:
     using char_type = Byte;
     using category = boost::iostreams::sink_tag;
 
-    SizeGetterSink() : _byteCounter(0)
+    SizeGetterSink()
+        : _byteCounter(0)
     {
     }
 

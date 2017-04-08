@@ -1,9 +1,9 @@
 #pragma once
 
 #include <iterator>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <boost/hana/map.hpp>
 #include <boost/variant.hpp>
@@ -61,14 +61,19 @@ class Document
 {
 public:
     Document();
+    ~Document();
 
     Document(Document&&) = default;
     Document& operator=(Document&&) = default;
 
-    ~Document();
-
-    List& getList() { return *_list; }
-    const List& getList() const { return *_list; }
+    List& getList()
+    {
+        return *_list;
+    }
+    const List& getList() const
+    {
+        return *_list;
+    }
 
     bool operator==(const Document& rhs) const
     {
@@ -101,7 +106,8 @@ struct Element
     Value value;
 };
 
-inline Document::Document() : _list(new List())
+inline Document::Document()
+    : _list(new List())
 {
 }
 

@@ -5,7 +5,7 @@
 Bson::Bytes getTest1Input()
 {
     const auto input =
-    // clang-format off
+        // clang-format off
         Bson::Bytes{
             0x16, 0x00, 0x00, 0x00,
             0x02,
