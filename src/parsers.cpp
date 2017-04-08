@@ -1,4 +1,6 @@
-#include "Bson/Details/utils.h"
+#include "Bson/Details/parsers.h"
+
+#include "Bson/Details/calcsize.h"
 
 #include <algorithm>
 #include <cassert>
@@ -9,6 +11,8 @@
 #include <boost/hana/fold_left.hpp>
 
 namespace Bson
+{
+namespace Details
 {
 
 namespace
@@ -166,7 +170,20 @@ List read(Istream& stream)
     }
 
     return elements;
-    ;
+}
+
+template <>
+Document read(Istream& stream)
+{
+    const Int32 documentSize = Details::read<Int32>(stream);
+    assert(documentSize >= static_cast<Int32>(sizeof(Int32) + sizeof(Byte)));
+
+    Document document;
+    document.getList() = Details::read<List>(stream);
+    const auto endByte = Details::read<Byte>(stream);
+    assert(endByte == 0);
+
+    return document;
 }
 
 void write(const String& string, Ostream& stream)
@@ -207,4 +224,17 @@ void write(const List& list, Ostream& stream)
     }
 }
 
+void write(const Document& document, Ostream& stream)
+{
+    write(document, stream, Details::calcValueSize(document));
+}
+
+void write(const Document& document, Ostream& stream, const size_t documentSize)
+{
+    Details::write(static_cast<Int32>(documentSize), stream);
+    Details::write(document.getList(), stream);
+    Details::write(static_cast<Byte>(0), stream);
+}
+
+} // namespace Details
 } // namespace Bson

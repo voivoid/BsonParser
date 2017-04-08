@@ -1,14 +1,28 @@
-#include "Bson/parser.h"
+#include "Bson/bson.h"
+#include "test-input.h"
+
+bool test1()
+{
+    // clang-format on
+    const auto document = Bson::decode(getTest1Input());
+    const auto expectedElement = Bson::Element{{"hello"}, Bson::String{"world"}};
+
+    const bool result = document.getList().size() == 1 && document.getList()[0] == expectedElement;
+
+    return result;
+}
+
+bool test2()
+{
+    const auto document = Bson::decode(getTest2Input());
+    const bool result = document.getList().size() == 1;
+
+    return result;
+}
 
 int main()
 {
-
-    const auto input =
-        Bson::Bytes{0x16, 0x00, 0x00, 0x00, 0x02, 'h', 'e', 'l', 'l', 'o', 0x00, 0x06, 0x00, 0x00, 0x00, 'w', 'o', 'r', 'l', 'd', 0x00, 0x00};
-    const auto document = Bson::decode(input);
-    const auto expectedElement = Bson::Element{{"hello"}, Bson::String{"world"}};
-
-    const bool result = document._list.size() == 1 && document._list[0] == expectedElement;
+    const bool result = test1() && test2();
 
     return result ? 0 : -1;
 }

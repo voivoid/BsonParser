@@ -1,15 +1,21 @@
-#include "Bson/parser.h"
+#include "Bson/bson.h"
+#include "test-input.h"
 
 #include <cassert>
 #include <string>
 
-int main()
+bool test1()
 {
     Bson::Document doc;
-    doc._list.push_back({{"hello"}, Bson::String{"world"}});
+    doc.getList().push_back({{"hello"}, Bson::String{"world"}});
     const auto result = Bson::encode(doc);
-    const auto expected =
-        Bson::Bytes{0x16, 0x00, 0x00, 0x00, 0x02, 'h', 'e', 'l', 'l', 'o', 0x00, 0x06, 0x00, 0x00, 0x00, 'w', 'o', 'r', 'l', 'd', 0x00, 0x00};
+    const auto expected = getTest1Input();
 
-    return result == expected ? 0 : -1;
+    return result == expected;
+}
+
+int main()
+{
+    const auto result = test1();
+    return result ? 0 : -1;
 }

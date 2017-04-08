@@ -1,4 +1,6 @@
-#include "Bson/Details/utils.h"
+#include "Bson/Details/parsers.h"
+
+#include "Bson/Details/calcsize.h"
 
 #include <cassert>
 #include <iostream>
@@ -7,15 +9,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <type_traits>
 
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 
 template <typename T>
-size_t getValueSize(const T&)
+size_t getValueSize(const T& value)
 {
-    // TODO : calc size
-    return 1024;
+    return Bson::Details::calcValueSize(value);
 }
 
 template <typename T>
@@ -27,8 +29,8 @@ bool testMemory(const T& value)
     boost::iostreams::stream<decltype(arr)> istream(arr);
     boost::iostreams::stream<decltype(arr)> ostream(arr);
 
-    Bson::write(value, ostream);
-    const auto result = Bson::read<T>(istream);
+    Bson::Details::write(value, ostream);
+    const auto result = Bson::Details::read<T>(istream);
 
     return result == value;
 }
@@ -37,8 +39,8 @@ template <typename T>
 bool testStream(const T& val)
 {
     std::basic_stringstream<Bson::Byte> ss(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
-    Bson::write(val, ss);
-    const auto result = Bson::read<T>(ss);
+    Bson::Details::write(val, ss);
+    const auto result = Bson::Details::read<T>(ss);
 
     return val == result;
 }
@@ -117,11 +119,22 @@ int main()
     test(Bson::Element{{"test int64"}, Bson::Int64{42}});
     test(Bson::Element{{"test Decimal"}, Bson::Decimal{42.0}});
 
+
     test(Bson::List{});
-    test(Bson::List{Bson::Element{{"element 1"}, Bson::Double{42.0}}});
-    test(Bson::List{Bson::Element{{"element 1"}, Bson::String{"Hello world"}},
-                    Bson::Element{{"element 2"}, Bson::Int32{42}},
-                    Bson::Element{{"element 3"}, Bson::Int64{42}}});
+
+    {
+        Bson::List l;
+        l.push_back(Bson::Element{{"element 1"}, Bson::Double{42.0}});
+        test(l);
+    }
+
+    {
+        Bson::List l;
+        l.push_back(Bson::Element{{"element 1"}, Bson::String{"Hello world"}});
+        l.push_back(Bson::Element{{"element 2"}, Bson::Int32{42}});
+        l.push_back(Bson::Element{{"element 3"}, Bson::Int64{42}});
+        test(l);
+    }
 
     return 0;
 }

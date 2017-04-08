@@ -1,4 +1,6 @@
-#include "Bson/parser.h"
+#include "Bson/bson.h"
+
+#include "Bson/Details/calcsize.h"
 
 #include <cassert>
 
@@ -8,23 +10,16 @@
 namespace Bson
 {
 
-size_t calcDocumentSize(const Document&)
-{
-    // TODO: calc size
-    return 0x16;
-}
-
 std::vector<Byte> encode(const Document& document)
 {
-    const auto documentSize = calcDocumentSize(document);
+    const auto documentSize = Details::calcValueSize(document);
     std::vector<Bson::Byte> data(documentSize, 0);
 
     boost::iostreams::basic_array_sink<Byte> arr(data.data(), data.size());
     boost::iostreams::stream<decltype(arr)> ostream(arr);
 
-    write(static_cast<Int32>(documentSize), ostream);
-    write(document._list, ostream);
-    write(static_cast<Byte>(0), ostream);
+    Details::write(document, ostream, documentSize);
+    assert(data.back() == 0);
 
     return data;
 }
@@ -34,14 +29,7 @@ Document decode(const std::vector<Byte>& data)
     boost::iostreams::basic_array_source<Byte> arr(data.data(), data.size());
     boost::iostreams::stream<decltype(arr)> istream(arr);
 
-    /*const Int32 documentSize = */ read<Int32>(istream);
-
-    Document document;
-    document._list = read<List>(istream);
-    const auto endByte = read<Byte>(istream);
-    assert(endByte == 0);
-
-    return document;
+    return Details::read<Document>(istream);
 }
 
 } // namespace Bson
