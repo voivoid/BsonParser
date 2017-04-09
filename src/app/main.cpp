@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
     if(!boost::filesystem::is_regular_file(filePath))
     {
-        std::cerr << "File " << filePath << " is not regular file\n";
+        std::cerr << "File " << filePath << " is not a regular file\n";
         return -1;
     }
 
