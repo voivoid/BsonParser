@@ -10,14 +10,14 @@ add_library(BsonParser STATIC
     src/parsers.cpp
 )
 
-find_package(Boost 1.63.0 REQUIRED)
+find_package(Boost 1.63.0 REQUIRED COMPONENTS filesystem)
 target_link_libraries(BsonParser Boost::boost)
 
 target_include_directories(BsonParser PUBLIC inc)
+target_compile_options(BsonParser PUBLIC -Wall -Wextra -Werror -pedantic -std=c++1z)
 
-if(NOT MSVC)
-    target_compile_options(BsonParser PUBLIC -Wall -Wextra -Werror -pedantic -std=c++1z)
-endif()
+add_executable(BsonParserApp src/app/main.cpp)
+target_link_libraries(BsonParserApp BsonParser Boost::boost Boost::filesystem)
 
 enable_testing()
 

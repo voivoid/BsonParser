@@ -91,17 +91,6 @@ typename std::enable_if_t<std::is_pod<T>::value> write(const T value, Ostream& s
     stream.write(reinterpret_cast<const Byte*>(&value), sizeof(value));
 }
 
-#define BSON_INSTANTIATE_FUNCS(type)   \
-    template type read(Istream& iter); \
-    template void write(const type value, Ostream& iter);
-
-BSON_INSTANTIATE_FUNCS(Byte);
-BSON_INSTANTIATE_FUNCS(Int32);
-BSON_INSTANTIATE_FUNCS(Int64);
-BSON_INSTANTIATE_FUNCS(Uint64);
-BSON_INSTANTIATE_FUNCS(Double);
-BSON_INSTANTIATE_FUNCS(Decimal);
-
 template <>
 String read(Istream& stream)
 {
