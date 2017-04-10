@@ -48,8 +48,12 @@ bool testStream(const T& val)
 template <typename T>
 void test(const T& value)
 {
-    assert(testMemory(value));
-    assert(testStream(value));
+    bool result = testMemory(value) && testStream(value);
+
+    if(!result)
+    {
+        throw std::runtime_error("Test failed");
+    }
 }
 
 int main()

@@ -36,7 +36,7 @@ add_executable(BsonParserTestEncodeDecode test/test-encode-decode.cpp
                                           test/test-input.h)
 target_link_libraries(BsonParserTestEncodeDecode PRIVATE BsonParser)
 
-add_test(NAME BsonParserUtils COMMAND BsonParserTestUtils)
+add_test(NAME BsonParserUtils COMMAND BsonParserTestParsers)
 add_test(NAME BsonParserEncode COMMAND BsonParserTestDecode)
 add_test(NAME BsonParserDecode COMMAND BsonParserTestEncode)
 add_test(NAME BsonParserEncodeDecode COMMAND BsonParserTestEncodeDecode)

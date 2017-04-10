@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 
     boost::filesystem::ifstream fstream(filePath, std::ios_base::binary);
     assert(fstream);
+    fstream.unsetf(std::ios::skipws);
 
     Bson::Bytes content;
     content.reserve(fileSize);

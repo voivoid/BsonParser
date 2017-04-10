@@ -10,6 +10,8 @@
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/fold_left.hpp>
 
+#define UNUSED __attribute__((unused))
+
 namespace Bson
 {
 namespace Details
@@ -111,7 +113,7 @@ CString read(Istream& stream)
 template <>
 False read(Istream& stream)
 {
-    const auto byte = read<Byte>(stream);
+    UNUSED const auto byte = read<Byte>(stream);
     assert(byte == 0x00);
 
     return {};
@@ -120,7 +122,7 @@ False read(Istream& stream)
 template <>
 True read(Istream& stream)
 {
-    const auto byte = read<Byte>(stream);
+    UNUSED const auto byte = read<Byte>(stream);
     assert(byte == 0x01);
 
     return {};
@@ -157,12 +159,12 @@ List read(Istream& stream)
 template <>
 Document read(Istream& stream)
 {
-    const Int32 documentSize = Details::read<Int32>(stream);
+    UNUSED const Int32 documentSize = Details::read<Int32>(stream);
     assert(documentSize >= static_cast<Int32>(sizeof(Int32) + sizeof(Byte)));
 
     Document document;
     document.getList() = Details::read<List>(stream);
-    const auto endByte = Details::read<Byte>(stream);
+    UNUSED const auto endByte = Details::read<Byte>(stream);
     assert(endByte == 0);
 
     return document;
@@ -224,6 +226,17 @@ void write(const Document& document, Ostream& stream, const size_t documentSize)
     Details::write(document.getList(), stream);
     Details::write(static_cast<Byte>(0), stream);
 }
+
+#define BSON_INSTANTIATE_FUNCS(type)    \
+     template type read(Istream& iter); \
+     template void write(const type value, Ostream& iter);
+
+BSON_INSTANTIATE_FUNCS(Byte);
+BSON_INSTANTIATE_FUNCS(Int32);
+BSON_INSTANTIATE_FUNCS(Int64);
+BSON_INSTANTIATE_FUNCS(Uint64);
+BSON_INSTANTIATE_FUNCS(Double);
+BSON_INSTANTIATE_FUNCS(Decimal);
 
 } // namespace Details
 } // namespace Bson
