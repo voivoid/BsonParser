@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iterator>
+#include <chrono>
 
 #include <boost/filesystem.hpp>
 
@@ -40,8 +41,15 @@ int main(int argc, char** argv)
 
     std::cout << "Content size: " << content.size() << "\n";
 
+    const auto time1 = std::chrono::high_resolution_clock::now();
+
     Bson::Bytes result = Bson::encode(Bson::decode(content));
+
+    const auto time2 = std::chrono::high_resolution_clock::now();
+    const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( time2 - time1 ).count();
+
     std::cout << "Result: " << std::boolalpha << (result == content) << "\n";
+    std::cout << "Duration: " << duration << "\n";
 
     return 0;
 }
