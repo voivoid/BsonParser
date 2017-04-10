@@ -84,13 +84,6 @@ T read(Istream& stream)
     return value;
 }
 
-template <typename T>
-typename std::enable_if_t<std::is_pod<T>::value> write(const T value, Ostream& stream)
-{
-    static_assert(std::is_pod<T>::value);
-    stream.write(reinterpret_cast<const Byte*>(&value), sizeof(value));
-}
-
 template <>
 String read(Istream& stream)
 {
@@ -173,6 +166,13 @@ Document read(Istream& stream)
     assert(endByte == 0);
 
     return document;
+}
+
+template <typename T>
+typename std::enable_if_t<std::is_pod<T>::value> write(const T value, Ostream& stream)
+{
+    static_assert(std::is_pod<T>::value);
+    stream.write(reinterpret_cast<const Byte*>(&value), sizeof(value));
 }
 
 void write(const String& string, Ostream& stream)

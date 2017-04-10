@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    if(argc != 2)
+    if (argc != 2)
     {
         std::cerr << "Usage: " << argv[0] << " <filename>\n";
         return -1;
@@ -16,13 +16,13 @@ int main(int argc, char** argv)
     boost::filesystem::path filePath = argv[1];
     assert(!filePath.empty());
 
-    if(!boost::filesystem::exists(filePath))
+    if (!boost::filesystem::exists(filePath))
     {
         std::cerr << "File " << filePath << " doesn't exist\n";
         return -1;
     }
 
-    if(!boost::filesystem::is_regular_file(filePath))
+    if (!boost::filesystem::is_regular_file(filePath))
     {
         std::cerr << "File " << filePath << " is not a regular file\n";
         return -1;
@@ -35,9 +35,7 @@ int main(int argc, char** argv)
 
     Bson::Bytes content;
     content.reserve(fileSize);
-    content.insert(content.begin(),
-                   std::istream_iterator<Bson::Byte>(fstream),
-                   std::istream_iterator<Bson::Byte>());
+    content.insert(content.begin(), std::istream_iterator<Bson::Byte>(fstream), std::istream_iterator<Bson::Byte>());
     assert(content.size() == fileSize);
 
     std::cout << "Content size: " << content.size() << "\n";
