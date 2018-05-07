@@ -229,7 +229,7 @@ void write(const Document& document, Ostream& stream, const size_t documentSize)
 
 #define BSON_INSTANTIATE_FUNCS(type)    \
      template type read(Istream& iter); \
-     template void write(const type value, Ostream& iter);
+     template void write(const type value, Ostream& iter)
 
 BSON_INSTANTIATE_FUNCS(Byte);
 BSON_INSTANTIATE_FUNCS(Int32);
